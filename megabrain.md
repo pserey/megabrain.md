@@ -1,5 +1,5 @@
 ---
-spec_version: "0.2.0"
+spec_version: "0.1.0"
 timezone: UTC
 filename_date_format: YYYY-MM-DD
 filename_exceptions:
