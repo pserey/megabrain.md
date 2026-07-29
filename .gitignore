@@ -1,12 +1,11 @@
+# Build output
+dist/
+
 # Harness-specific local state
 .claude/
 .codex/
 .cursor/
 .opencode/
-
-# Obsidian local UI state; shared vault configuration can be added deliberately
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
 
 # OS files
 .DS_Store

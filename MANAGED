@@ -1,0 +1,20 @@
+# Managed files of this release, one path per line, relative to the instance
+# root. These are replaced wholesale on upgrade [D-1] and hashed into
+# .megabrain/lock.json at install time [D-4]. A release declares its own set so
+# that adding or removing a managed file upgrades correctly [D-21].
+#
+# AGENTS.md and megabrain.md are deliberately absent: they are managed in
+# structure and instance-owned in content [D-2], never overwritten, never
+# hashed. Everything else shipped under template/ is instance-owned starter
+# content the user may edit or delete freely.
+#
+# Blank lines and lines beginning with # are ignored.
+
+scripts/doctor.sh
+scripts/megabrain_doctor.py
+skills/core/add-item.md
+skills/core/briefing.md
+skills/core/capture.md
+skills/core/complete-item.md
+skills/core/extend-brain.md
+skills/core/upgrade.md
