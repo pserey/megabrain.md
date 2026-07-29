@@ -11,7 +11,7 @@
 # Blank lines and lines beginning with # are ignored.
 
 scripts/doctor.sh
-scripts/megabrain_doctor.py
+scripts/megabrain.py
 skills/core/add-item.md
 skills/core/briefing.md
 skills/core/capture.md

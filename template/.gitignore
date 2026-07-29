@@ -8,5 +8,9 @@
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 
+# Tooling scratch
+__pycache__/
+*.pyc
+
 # OS files
 .DS_Store

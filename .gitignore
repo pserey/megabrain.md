@@ -7,5 +7,9 @@ dist/
 .cursor/
 .opencode/
 
+# Tooling scratch
+__pycache__/
+*.pyc
+
 # OS files
 .DS_Store
