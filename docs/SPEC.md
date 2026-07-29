@@ -428,7 +428,7 @@ An instance is created from a distribution of this specification and is expected
 
 **[D-1]** Every file shipped by the standard MUST be either **managed** or **instance-owned**. Managed files — core procedures, the upgrade procedure, the conformance checker, and any other tooling the standard ships — are replaced wholesale on upgrade. Instance-owned files MUST NOT be modified by an upgrade except where a migration step directs it: a schema change that rewrites instance content (a renamed status value, a new required key) is a legitimate programmatic or agentic step (§15.3), and migration steps are the only sanctioned path by which an upgrade touches instance content.
 
-**[D-2]** `AGENTS.md` and `megabrain.md` are managed in structure and instance-owned in content: the skeleton ([R-17]) and the declaration schema (§7) belong to the standard; the dispatch rows, declarations, and prose belong to the instance. A change to the structure of either file MUST be carried out as an agentic migration step (§15.3) that preserves instance content ([R-12]).
+**[D-2]** `AGENTS.md` and `megabrain.md` are managed in structure and instance-owned in content: the skeleton ([R-17]) and the declaration schema (§7) belong to the standard; the dispatch rows, declarations, and prose belong to the instance. A change to the structure of either file MUST be carried out as an agentic migration step (§15.3) that preserves instance content ([R-12]). For every other purpose in this section these two files are treated as instance-owned: they MUST NOT be replaced wholesale ([D-16]) and MUST NOT appear in the lock file's hash map ([D-4]).
 
 **[D-3]** An instance SHOULD NOT modify managed files. A modification to a managed file WILL be overwritten by the next upgrade — the file belongs to the standard, and the modification survives only in git history. Because git is mandatory ([G-1]) and the upgrade requires a clean tree and creates a rollback tag ([D-13]), the overwrite is non-destructive. A modified managed file MUST be detected at upgrade time via the lock file (§15.2) and MUST be surfaced to the user before being overwritten.
 
@@ -436,7 +436,7 @@ An instance is created from a distribution of this specification and is expected
 
 ### 15.2 The lock file
 
-**[D-4]** An instance MUST carry a lock file at `.megabrain/lock.json` recording, at minimum: the specification version installed, the release identifier of the distribution installed, the installation timestamp (RFC 3339), and the SHA-256 hash of every managed file as installed.
+**[D-4]** An instance MUST carry a lock file at `.megabrain/lock.json` recording, at minimum: the specification version installed, the release identifier of the distribution installed, the distribution source it was installed from, the installation timestamp (RFC 3339), and the SHA-256 hash of every managed file as installed. The two gray-zone files of [D-2] are excluded from that hash map. The paths recorded in the hash map are the definitive managed-file set for that instance: a file the map does not name is instance-owned, and tooling MUST NOT infer the boundary from a file's location.
 
 **[D-5]** The lock file MUST be written by the installer and the upgrade procedure only. It is neither entity content nor user configuration, and MUST NOT be edited by hand or by any other procedure.
 
@@ -481,6 +481,8 @@ An instance is created from a distribution of this specification and is expected
 ### 15.6 Release policy
 
 **[D-20]** A migration pack MUST be tested against upgrades from the two preceding minor versions. Chains spanning older versions MUST remain applicable in sequence ([D-14]), SHOULD be labeled experimental, and the conformance checker MUST be the arbiter of whether such a chain succeeded.
+
+**[D-21]** A release MUST declare its own managed-file set, so that a release adding or removing a managed file is applied correctly by an instance whose lock file predates the change. A release MUST also carry every migration pack for the versions it supersedes, so that a chain ([D-14]) is executable from a single release without further retrieval.
 
 ## 16. Conformance
 
