@@ -1,6 +1,6 @@
 # The megabrain specification
 
-**Version:** 0.1.0 · **Status:** Released 2026-07-28 · **Format:** Normative
+**Version:** 0.2.0 · **Status:** Released 2026-07-29 · **Format:** Normative
 
 A megabrain is a git repository of plain Markdown files that a person keeps as their second brain, and that AI agents read and write as a first-class client. This document specifies what makes a repository *a megabrain* rather than a folder of notes: the invariants, the schema, the agent runtime contract, and the points at which two instances may legitimately differ.
 
@@ -16,7 +16,31 @@ Requirement identifiers are stable across revisions. A requirement that is remov
 
 ## 2. Terminology
 
-**Instance** — one person's megabrain repository. **Note** — a single Markdown file with YAML frontmatter. **Entity** — the thing a note represents (a task, a course, a paper, a measurement). **Archetype** — the structural kind a note belongs to, from the closed set in §5. **Domain** — a life area, recorded as metadata. **Procedure** — a Markdown file describing how an agent performs one recurring operation. **Integration** — an external system queried live by an agent. **Manifest** — the file in which an instance declares itself. **Contract layer** — the files that define behavior rather than record content: the manifest, the agent root, and procedures.
+**Instance** — one person's megabrain repository.
+
+**Note** — a single Markdown file with YAML frontmatter.
+
+**Entity** — the thing a note represents (a task, a course, a paper, a measurement).
+
+**Archetype** — the structural kind a note belongs to, from the closed set in §5.
+
+**Domain** — a life area, recorded as metadata.
+
+**Procedure** — a Markdown file describing how an agent performs one recurring operation.
+
+**Integration** — an external system queried live by an agent.
+
+**Manifest** — the file in which an instance declares itself.
+
+**Contract layer** — the files that define behavior rather than record content: the manifest, the agent root, procedures, and managed tooling (§15).
+
+**Managed file** — a file shipped by the standard and replaced wholesale on upgrade (§15.1).
+
+**Lock file** — the tooling-owned record of what was installed, at `.megabrain/lock.json` (§15.2).
+
+**Migration pack** — the versioned set of steps that moves an instance from one specification version to the next (§15.3).
+
+**Conformance checker** — the managed script that validates an instance against its declared `spec_version` (§15.5).
 
 ## 3. The layer model
 
@@ -396,20 +420,82 @@ An instance grows: a new domain, a new entity type, a new integration, a new pro
 
 > **Rationale (non-normative).** [E-5] is why [E-4] exists. A copy of this specification sitting in every instance would be read at the wrong moments — consuming context on unrelated requests — and still skipped at the one moment it mattered, because nothing would route to it. Encoding the rules as a procedure that the dispatch table points at means the specification enforces itself exactly when someone extends the brain, and stays out of the way otherwise. It is the same mechanism as [R-4]: behavior lives in procedures, and procedures are read when they apply.
 
-## 15. Conformance
+## 15. Distribution and upgrades
+
+An instance is created from a distribution of this specification and is expected to outlive the version it was created from. The specification evolves, and existing instances MUST be able to move forward without being rebuilt or merged by hand. This section specifies the ownership boundary that makes upgrades safe, the lock file that anchors them, the migration mechanism, and the checker that verifies them.
+
+### 15.1 The ownership boundary
+
+**[D-1]** Every file shipped by the standard MUST be either **managed** or **instance-owned**. Managed files — core procedures, the upgrade procedure, the conformance checker, and any other tooling the standard ships — are replaced wholesale on upgrade. Instance-owned files MUST NOT be modified by an upgrade except where a migration step directs it: a schema change that rewrites instance content (a renamed status value, a new required key) is a legitimate programmatic or agentic step (§15.3), and migration steps are the only sanctioned path by which an upgrade touches instance content.
+
+**[D-2]** `AGENTS.md` and `megabrain.md` are managed in structure and instance-owned in content: the skeleton ([R-17]) and the declaration schema (§7) belong to the standard; the dispatch rows, declarations, and prose belong to the instance. A change to the structure of either file MUST be carried out as an agentic migration step (§15.3) that preserves instance content ([R-12]).
+
+**[D-3]** An instance SHOULD NOT modify managed files. A modification to a managed file WILL be overwritten by the next upgrade — the file belongs to the standard, and the modification survives only in git history. Because git is mandatory ([G-1]) and the upgrade requires a clean tree and creates a rollback tag ([D-13]), the overwrite is non-destructive. A modified managed file MUST be detected at upgrade time via the lock file (§15.2) and MUST be surfaced to the user before being overwritten.
+
+> **Rationale (non-normative).** The hard split is what makes upgrades deterministic: there is no merge machinery and no patch program, because managed files are simply replaced and instance files are simply left alone. The two gray-zone files are the deliberate exception, and they get judgment — an agent executing instructions — rather than a diff, because their changes are structural and their content is the user's.
+
+### 15.2 The lock file
+
+**[D-4]** An instance MUST carry a lock file at `.megabrain/lock.json` recording, at minimum: the specification version installed, the release identifier of the distribution installed, the installation timestamp (RFC 3339), and the SHA-256 hash of every managed file as installed.
+
+**[D-5]** The lock file MUST be written by the installer and the upgrade procedure only. It is neither entity content nor user configuration, and MUST NOT be edited by hand or by any other procedure.
+
+**[D-6]** The lock file MUST be the authoritative anchor for upgrades: the difference between its recorded version and a target release determines the migration chain (§15.4), and its hashes determine drift ([D-3]).
+
+> **Rationale (non-normative).** The hash manifest earns its place twice. Without it, detecting drift means fetching the old release and diffing — and a modification the user *committed* to a managed file is invisible to the clean-tree check. With it, drift detection is a local comparison, and contract portability (§16, item 6) collapses into a hash equality check instead of a reading task.
+
+### 15.3 Migration packs
+
+**[D-7]** Every release of this specification that changes any conformance requirement MUST ship a **migration pack**: a directory `migrations/<version>/` containing a `MIGRATING.md` index and the scripts of its programmatic steps.
+
+**[D-8]** `MIGRATING.md` MUST carry YAML frontmatter declaring `from`, `to`, and an ordered `steps` list. Each step MUST declare `id`, `kind`, `runtime`, `summary`, and `verify`; a `programmatic` step MUST additionally declare `script`. The body below the frontmatter is prose for the executing agent.
+
+**[D-9]** A step's `kind` MUST be one of: `programmatic` — applied by executing its script; or `agentic` — applied by the executing agent following the step's prose. This version of the specification defines exactly one `runtime` value, `bash`, and programmatic scripts MUST be POSIX-conforming and idempotent. Further `runtime` values are reserved.
+
+**[D-10]** An agentic step MUST be executable by an agent whose only capabilities are reading and writing files ([R-16]), and MUST state what to do when it cannot complete ([C-12]).
+
+**[D-11]** Every step's `verify` MUST name a check the conformance checker can perform. Verification exists for failure localization (§15.4): an upgrade halts on the checker, not on a step's self-report.
+
+> **Rationale (non-normative).** Steps are classified by *how they are applied*, not by what they change. The agentic kind is the escape hatch that keeps the mechanism closed: a change that cannot be scripted can still be instructed, and a change that cannot be instructed can still ask the user — so no future revision is unshippable for want of a migration mechanism. What makes agent execution safe to rely on is that an agentic step is not believed, it is verified ([D-11]).
+
+### 15.4 The upgrade procedure
+
+**[D-12]** Upgrades MUST be executed by an agent following a core procedure — conventionally `upgrade` — reachable from the dispatch table in `AGENTS.md`. The specification defines no non-agent upgrade path: the agent is the primary operator of an instance.
+
+**[D-13]** Before applying any migration, the procedure MUST verify that the working tree is clean and MUST create a rollback tag identifying the upgrade (conventionally `pre-upgrade-<to-version>`).
+
+**[D-14]** Migration packs MUST be applied strictly in version order, from the version recorded in the lock file to the target version, one pack per intervening release.
+
+**[D-15]** The conformance checker MUST run before the first pack (against the instance's current version) and after the last pack (against the target version). A failing final check MUST halt the upgrade and be reported; per-pack and per-step checks ([D-11]) MAY then be run to localize the failure.
+
+**[D-16]** After all packs apply cleanly, managed files MUST be replaced wholesale from the release. Before overwriting a managed file whose hash differs from the lock file, the procedure MUST warn the user; the modified version is preserved by the rollback tag ([D-13]) and git history, and no separate backup mechanism is required.
+
+**[D-17]** On success, the procedure MUST rewrite the lock file with the new version, release identifier, timestamp, and managed-file hashes, and MUST report the applied chain to the user.
+
+### 15.5 The conformance checker
+
+**[D-18]** An instance MUST ship a conformance checker as a managed script. The checker MUST validate items 1–6 of §16 against the `spec_version` declared in the manifest, so that a partially upgraded instance reports against the version it actually satisfies. For item 6 the checker compares managed files against the lock-file hashes and MUST report drifted files without failing conformance on their content.
+
+**[D-19]** The checker MUST report every violation by its requirement identifier and MUST exit non-zero on any MUST-level violation.
+
+### 15.6 Release policy
+
+**[D-20]** A migration pack MUST be tested against upgrades from the two preceding minor versions. Chains spanning older versions MUST remain applicable in sequence ([D-14]), SHOULD be labeled experimental, and the conformance checker MUST be the arbiter of whether such a chain succeeded.
+
+## 16. Conformance
 
 An instance conforms to this specification when it satisfies every **MUST** requirement above.
 
 A conformance check consists of:
 
-1. **Structure** — a git repository of Markdown notes with a `megabrain.md` manifest and an `AGENTS.md` at the root, the latter following the skeleton of [R-17] ([C-1], [C-3], [M-1]).
+1. **Structure** — a git repository of Markdown notes with a `megabrain.md` manifest, an `AGENTS.md` at the root following the skeleton of [R-17], and a `.megabrain/lock.json` lock file ([C-1], [C-3], [M-1], [D-4]).
 2. **Declaration** — every note directory declared with an archetype; every status vocabulary declared with terminal statuses; every procedure-required configuration value present in the manifest ([A-0], [L-1], [M-2], [M-3]).
 3. **Schema** — every entity note carries a declared `domain` and a `date_added`; every note in a status-bearing archetype carries a declared `status`; every `declared`-type key resolves against the manifest; no note carries a reserved key with a non-reserved meaning ([S-1], [S-2], [S-9], [S-16], [S-17]).
-4. **Views** — the applicable canonical views render from frontmatter alone ([V-2]).
+4. **Views** — the applicable canonical views MUST be computable from frontmatter alone ([V-2]); the checker verifies this by computing them. For the two views required of every instance this reduces to the key checks of item 3; views depending on `due` are checked only where `due` is declared.
 5. **Extension** — every note directory is declared, and the instance ships an extension procedure reachable from the dispatch table ([E-1], [E-4]).
-6. **Contract portability** — no core procedure contains a value that would differ in another instance ([R-10], [M-3]).
+6. **Contract portability** — no core procedure contains a value that would differ in another instance ([R-10], [M-3]). Verified mechanically by comparing managed-file hashes against the release ([D-4]): a managed file byte-identical to its release cannot contain instance configuration. Reading the procedures is required only for files whose hash differs.
 
-An instance MAY be checked mechanically for items 1–5. Item 6 requires reading the procedures.
+Items 1–6 are mechanically checkable; item 6 degrades to reading the procedures only for managed files that have drifted.
 
 ## Appendix A — Illustrative frontmatter (non-normative)
 
@@ -492,3 +578,4 @@ This specification does not define, and MUST NOT be extended to define: any pers
 ## Changelog
 
 - **0.1.0** — initial release. Extracted from a working instance spanning engineering, graduate study, and personal-health domains, and refined through two annotation rounds before release.
+- **0.2.0** — Added §15 Distribution and upgrades: the managed/instance ownership boundary, the lock file, migration packs, the agent-executed upgrade procedure, the conformance checker, and the release policy. Conformance renumbered to §16.
