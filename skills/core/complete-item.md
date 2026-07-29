@@ -14,7 +14,8 @@ terminal statuses, `on_terminal`), `completion.log`,
    never logged to the completion log. The log records work that closed,
    not material that was read.
 4. Otherwise, append one dated line to the completion log declared in
-   `completion.log`, stating what was completed and its domain. Entries are
+   `completion.log`, stating what was completed, its domain, and the
+   terminal status it reached. Entries are
    one line, dated with an ISO calendar date, and are never rewritten or
    reordered — corrections are appended, not edited.
 5. Then, and only after the log line is written, apply the directory's
