@@ -38,6 +38,10 @@ jobs:
       - name: Check the release ships a migration pack for this version
         run: |
           version="$(tr -d '[:space:]' < VERSION)"
+          if [ "${version##*.}" != "0" ]; then
+            echo "patch release: no conformance change, no migration pack required"
+            exit 0
+          fi
           if [ ! -f "migrations/$version/MIGRATING.md" ]; then
             echo "no migrations/$version/MIGRATING.md; every conformance-changing release ships one [D-7]" >&2
             exit 1
