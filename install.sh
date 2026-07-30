@@ -7,7 +7,7 @@
 # anchor [D-4]. The instance has no fork relationship with the spec repository,
 # so it is private by construction.
 #
-#   curl -fsSL https://raw.githubusercontent.com/pserey/megabrain.md/main/install.sh | bash
+#   curl -fsSL https://megabrain.serey.uk/install.sh | bash
 #   curl -fsSL .../install.sh | bash -s -- --dir ~/brain --version 0.2.0
 #
 # The installer asks nothing. Tailoring the brain -- timezone, domains, entity

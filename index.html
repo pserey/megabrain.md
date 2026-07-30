@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>megabrain.md</title>
+<meta name="description" content="A git repository of plain Markdown files you keep as a second brain, and that AI agents read and write as a first-class client.">
+<style>
+  :root { color-scheme: light dark; --fg: #16181d; --muted: #5c6270; --bg: #fdfdfc; --line: #e3e3e0; --accent: #3d5afe; --code-bg: #f4f4f2; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e8e8e6; --muted: #9aa0ab; --bg: #16181d; --line: #2b2e36; --accent: #8c9eff; --code-bg: #1e2128; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 3rem 1.5rem 5rem; background: var(--bg); color: var(--fg);
+         font: 16px/1.65 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 43rem; margin: 0 auto; }
+  h1 { font-size: 1.9rem; letter-spacing: -0.02em; margin: 0 0 .35rem; }
+  .tag { color: var(--muted); font-style: italic; margin: 0 0 2rem; }
+  h2 { font-size: 1.05rem; letter-spacing: .04em; text-transform: uppercase;
+       color: var(--muted); margin: 2.75rem 0 .75rem; font-weight: 600; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 7px;
+        padding: .9rem 1rem; overflow-x: auto; margin: 0 0 .75rem; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; }
+  p code { background: var(--code-bg); padding: .12em .38em; border-radius: 4px; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  ul { padding-left: 1.15rem; }
+  li { margin-bottom: .4rem; }
+  .note { color: var(--muted); font-size: .9rem; }
+  footer { margin-top: 3.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line);
+           color: var(--muted); font-size: .875rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>megabrain.md</h1>
+  <p class="tag">&ldquo;Megabrain, ativar.&rdquo;</p>
+
+  <p>A git repository of plain Markdown files that you keep as a second brain, and that AI agents read and write as a first-class client. No database, no app, no build step &mdash; the files are the source of truth.</p>
+
+  <h2>Install</h2>
+  <pre><code>curl -fsSL https://megabrain.serey.uk/install.sh | bash</code></pre>
+  <p class="note">Creates <code>./megabrain</code> as a private git repository with no fork relationship to this project. Read <a href="install.sh">the script</a> before you pipe it anywhere.</p>
+
+  <h2>The agent is the operator</h2>
+  <p>You can edit every file by hand, but a megabrain is designed to be driven by an agent. Point yours at the repository: <code>AGENTS.md</code> routes what you ask for to a procedure in <code>skills/</code>, and those procedures travel with your data rather than living in one vendor's account.</p>
+  <p>Upgrades work the same way. There is no manual upgrade path &mdash; you ask your agent to upgrade the brain, and it checks conformance, tags a rollback point, applies each migration in order, and checks again.</p>
+
+  <h2>Read</h2>
+  <ul>
+    <li><a href="https://github.com/pserey/megabrain.md">Source on GitHub</a></li>
+    <li><a href="https://github.com/pserey/megabrain.md/blob/main/docs/SPEC.md">The specification</a> &mdash; what makes a repository a megabrain</li>
+    <li><a href="https://github.com/pserey/megabrain.md/blob/main/migrations/0.2.0/BOOTSTRAP.md">Upgrading a 0.1.0 instance</a></li>
+    <li><a href="https://github.com/pserey/megabrain.md/releases">Releases</a></li>
+  </ul>
+
+  <footer>Plain Markdown, under git, readable by anything.</footer>
+</main>
+</body>
+</html>
