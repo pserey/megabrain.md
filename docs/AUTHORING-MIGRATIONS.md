@@ -66,6 +66,8 @@ steps:
 
 Below the frontmatter, write prose for the agent that will execute this. Explain *why* each step exists, not just what it does; the agent reads this in full before acting, and an agentic step is only as good as its prose.
 
+A pack may carry files beyond those two — [D-7] states a minimum, not an exhaustive list. `migrations/0.2.0/BOOTSTRAP.md` is the precedent: a page the *user* reads on the web, with a block to paste into their agent. Add one whenever the previous version cannot dispatch to the upgrade procedure on its own, which is the case for any release that changes how upgrades are reached.
+
 ## 5. Write the scripts
 
 Constraints, all of them load-bearing:
