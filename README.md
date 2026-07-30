@@ -54,4 +54,6 @@ Editing a managed file is allowed and will be overwritten by the next upgrade. T
 
 ## Contributing to the standard
 
-Changes to [`docs/SPEC.md`](docs/SPEC.md) that alter any conformance requirement need a migration pack under `migrations/<version>/` and a release. `tools/build-release.sh` builds the tarball the workflow publishes; `bash install.sh --tarball dist/megabrain-template.tar.gz --dir /tmp/test` installs it locally without touching a release.
+Changes to [`docs/SPEC.md`](docs/SPEC.md) that alter any conformance requirement need a migration pack under `migrations/<version>/` and a release. [`docs/AUTHORING-MIGRATIONS.md`](docs/AUTHORING-MIGRATIONS.md) is the maintainer's walkthrough for writing one from the diff since the last tag.
+
+`tools/build-release.sh` builds the tarball the workflow publishes; `bash install.sh --tarball dist/megabrain-template.tar.gz --dir /tmp/test` installs it locally without touching a release.
