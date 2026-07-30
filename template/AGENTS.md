@@ -29,6 +29,7 @@ file write it covers.
 | Finishing, completing, cancelling, or being done with an item | `skills/core/complete-item.md` |
 | Summarizing or filing an article, paper, or link; a message that is mostly a URL | `skills/core/capture.md` |
 | Starting to track something new, adding a domain or entity type, setting up an integration | `skills/core/extend-brain.md` |
+| Upgrading this brain, moving to a newer spec version, installing a release | `skills/core/upgrade.md` |
 
 ## The re-read rule
 
