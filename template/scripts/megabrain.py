@@ -143,6 +143,25 @@ def _lines(text: str):
     return out
 
 
+BLOCK_SCALAR_INDICATORS = (">", ">-", ">+", "|", "|-", "|+")
+
+
+def _parse_block_scalar(items, index: int, parent_indent: int, indicator: str):
+    """Consume a literal (`|`) or folded (`>`) block scalar.
+
+    Blank lines and full-line comments were already dropped by _lines, so
+    the joined text is an approximation of the YAML value -- adequate for
+    the prose notes declarations carry, not a faithful scalar round-trip.
+    """
+    chunks = []
+    while index < len(items) and items[index][0] > parent_indent:
+        chunks.append(items[index][1])
+        index += 1
+    if indicator.startswith("|"):
+        return "\n".join(chunks), index
+    return " ".join(chunks), index
+
+
 def _parse_block(items, index: int, indent: int):
     if index >= len(items):
         return None, index
@@ -192,7 +211,10 @@ def _parse_mapping(items, index: int, indent: int):
         rest = rest.strip()
         index += 1
         if rest and not rest.startswith("#"):
-            result[key] = _scalar(rest)
+            if rest in BLOCK_SCALAR_INDICATORS:
+                result[key], index = _parse_block_scalar(items, index, level, rest)
+            else:
+                result[key] = _scalar(rest)
             continue
         if index < len(items) and items[index][0] > level:
             result[key], index = _parse_block(items, index, items[index][0])
@@ -307,7 +329,10 @@ class Instance:
             return []
         target = self.root / str(path)
         if target.is_file():
-            return [target]
+            # A declared entity path that is not Markdown is not a note (2)
+            # -- an Obsidian `.base` derived view, say -- so the note checks
+            # (frontmatter, filenames) do not apply to it.
+            return [target] if target.suffix == ".md" else []
         if not target.is_dir():
             return []
         return sorted(p for p in target.rglob("*.md") if p.is_file())
@@ -827,12 +852,25 @@ def _undeclared_directories(inst: Instance, out):
         if top in ignored_roots:
             dirnames[:] = []
             continue
-        if not any(f.endswith(".md") for f in filenames):
-            continue
-        if not any(rel == d or rel.startswith(d + os.sep) for d in declared):
+        undeclared = [
+            f for f in filenames
+            if f.endswith(".md") and not _declared_note(declared, os.path.join(rel, f))
+        ]
+        if undeclared:
             out.append(
-                Finding("MUST", "E-1", "undeclared-directories", f"{rel}/ holds notes but is not declared in the manifest")
+                Finding(
+                    "MUST",
+                    "E-1",
+                    "undeclared-directories",
+                    f"{rel}/ holds notes not declared in the manifest: {', '.join(sorted(undeclared))}",
+                )
             )
+
+
+def _declared_note(declared: set, rel_note: str) -> bool:
+    """A note is declared if it is a declared file path itself or lives
+    under a declared directory."""
+    return any(rel_note == d or rel_note.startswith(d + os.sep) for d in declared)
 
 
 @check("extension-procedure", 5)
