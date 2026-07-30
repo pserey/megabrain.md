@@ -1,0 +1,58 @@
+name: release
+
+# Tag-driven: pushing vX.Y.Z builds the template tarball and attaches it to a
+# GitHub Release, which is what install.sh downloads. The asset name is stable
+# across releases so that the /releases/latest/download/ redirect resolves.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build (dry run; publishes nothing)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Check the tag matches VERSION
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [ "$tag" != "v$version" ]; then
+            echo "tag $tag does not match VERSION $version" >&2
+            exit 1
+          fi
+
+      - name: Check the release ships a migration pack for this version
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [ ! -f "migrations/$version/MIGRATING.md" ]; then
+            echo "no migrations/$version/MIGRATING.md; every conformance-changing release ships one [D-7]" >&2
+            exit 1
+          fi
+
+      - name: Build the tarball
+        run: tools/build-release.sh dist
+
+      - name: Verify the tarball installs and conforms
+        run: |
+          bash install.sh --dir "$RUNNER_TEMP/verify" --tarball dist/megabrain-template.tar.gz
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/megabrain-template.tar.gz
+          generate_release_notes: true
