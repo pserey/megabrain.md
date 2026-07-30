@@ -113,21 +113,27 @@ Only once every pack in the chain has applied cleanly.
 1. Read the release's `MANAGED` file. That list, not the instance's directory
    layout, defines what is managed by the target release.
 2. Before overwriting anything, compare each managed file against the hashes in
-   the lock file:
+   the lock file. Run this from the release too — the instance may still not
+   ship the tooling at this point in the chain:
    ```
-   python3 scripts/megabrain.py lock verify
+   python3 <release>/template/scripts/megabrain.py lock verify --root .
    ```
    Any file it reports as drifted has been modified locally. **Warn the user by
    name for each one** before continuing. These files belong to the standard,
    so they are overwritten; the modified version survives in git history and
    under the rollback tag, and no separate backup is taken.
+
+   Drift is not visible to the clean-tree gate of step 4: a user who *committed*
+   a change to a managed file has a clean tree and a modified file. This
+   comparison is the only thing that catches that, which is why it runs before
+   any copying.
 3. Copy every path in `MANAGED` from `<release>/template/` into the instance,
    overwriting whatever is there. Create parent directories as needed. A
    managed file that the release drops should be deleted from the instance.
 4. Never overwrite `AGENTS.md` or `megabrain.md`. They are managed in structure
    and owned by the instance in content; they change only through the agentic
    steps of step 7.
-5. Rewrite the lock:
+5. Rewrite the lock, now that the target release's tooling is in place:
    ```
    python3 scripts/megabrain.py lock write \
        --release <release-identifier> \
@@ -135,6 +141,9 @@ Only once every pack in the chain has applied cleanly.
        --spec-version <target-version> \
        --managed-list <release>/MANAGED
    ```
+   This is the only write to the lock file the upgrade makes on its own; the
+   intermediate lock a migration step may have written is replaced here, not
+   amended.
 
 ## 9. Check conformance after migrating
 
@@ -159,8 +168,13 @@ first one that fails — that is the step that did not do what it claimed. Tell
 the user how to undo the whole attempt:
 
 ```
-git reset --hard pre-upgrade-<target-version>
+git reset --hard pre-upgrade-<target-version> && git clean -fd
 ```
+
+Both halves are needed. The reset restores every tracked file, but a managed
+file the release *added* is untracked, and a reset leaves it behind — the
+`clean` is what removes it. This is safe precisely because step 4 required a
+clean tree: anything untracked at this point came from the upgrade.
 
 Do not attempt the rollback yourself without the user's approval, and do not
 try to repair a failed migration by improvising edits.
