@@ -24,6 +24,8 @@ You can read and edit every file by hand; it is Markdown under git and nothing s
 
 **There is no manual upgrade path.** When a new release lands, you ask your agent to upgrade the brain and it follows [`skills/core/upgrade.md`](template/skills/core/upgrade.md): it checks conformance, tags a rollback point, applies each migration pack in order, replaces the managed files, and checks conformance again. This is deliberate — the upgrade is specified as an agent-executed procedure ([D-12]), not as a script you run, because some migration steps are judgment calls about your own content that no script can make.
 
+Instances created before 0.2.0 do not ship that procedure yet, so they need a one-time bootstrap: [**migrations/0.2.0/BOOTSTRAP.md**](migrations/0.2.0/BOOTSTRAP.md) has a block to copy straight into your agent.
+
 ## How it works
 
 - **Files are the source of truth.** No database, no app, no build step. Any frontend — Obsidian, a text editor, an agent — reads the same files.
