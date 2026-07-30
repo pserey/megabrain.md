@@ -771,8 +771,13 @@ def _date_format_regex(fmt: str) -> str:
 
 @check("views", 4)
 def _views(inst: Instance, out):
-    """Verify the canonical views by computing them ([V-2], [V-3])."""
-    declares_due = _field_decl(inst, "due") is not None
+    """Verify the canonical views by computing them ([V-2], [V-3]).
+
+    Views 1 and 2 need `domain` and `status` on every non-terminal note. Views
+    3 and 4 need `due` to be a date, which `reserved-keys` already enforces --
+    `due` is reserved with a fixed type (6.4), so unlike `priority` and
+    `progress` it needs no declaration in `fields` to be usable.
+    """
     for name, decl, archetype, path in _iter_entity_notes(inst):
         if archetype not in ("ephemeral_work_item", "durable_entity"):
             continue
@@ -791,14 +796,9 @@ def _views(inst: Instance, out):
             out.append(
                 Finding("MUST", "V-3", "views", f"{rel}: cannot be placed in the by-domain view without 'domain'")
             )
-        if "due" in front and not declares_due:
+        if front.get("status") is None and decl.get("status_vocabulary"):
             out.append(
-                Finding(
-                    "MUST",
-                    "V-3",
-                    "views",
-                    f"{rel}: carries 'due' but the manifest declares no 'due' field for the due-soon view",
-                )
+                Finding("MUST", "V-3", "views", f"{rel}: cannot be placed in the active-work view without 'status'")
             )
 
 
