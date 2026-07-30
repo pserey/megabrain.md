@@ -9,7 +9,7 @@ A megabrain is a git repository of plain Markdown files that you keep as a secon
 Hand this to your agent, or run it yourself:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/pserey/megabrain.md/main/install.sh | bash
+curl -fsSL https://megabrain.serey.uk/install.sh | bash
 ```
 
 That creates `./megabrain`: a plain private git repository with no fork relationship to this one, stamped with a lock file recording exactly what was installed. Pass `--dir ~/brain` to put it elsewhere, or `--version 0.2.0` to pin a release.
