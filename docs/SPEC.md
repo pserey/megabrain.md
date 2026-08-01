@@ -132,15 +132,21 @@ The durable record of what was completed, one line per closed item.
 One file per date, accumulating over time. Two flavors, declared per directory in the manifest:
 
 - **`prose`** — freeform writing covering a day: reflection, running notes, things not yet shaped into an entity.
-- **`record`** — a structured observation of the same shape each time: measurements, readings, per-meeting or per-assessment records. Meant to be read by machine rather than as prose.
+- **`record`** — a structured observation of the same shape each time: measurements, readings. Meant to be read by machine rather than as prose.
 
 **[A-5]** A dated-series directory MUST declare its flavor. Files MUST be named for the date they cover (§6.3), one date per file. A `prose` entry is not a work item and MUST NOT be treated as one — an agent MUST NOT infer work items from it without explicit instruction.
 
 **[A-6]** A `record` entry MUST carry its observation as frontmatter keys rather than prose, and MUST NOT be edited to reflect a later observation — a new observation is a new file. A missing value MUST be omitted rather than estimated or interpolated.
 
-*Typical names:* `journal/` (prose); `health/measurements/`, `meetings/`, `grades/` (record).
+**[A-11]** A dated-series directory MUST be one whose entries are uniquely identified by the date they cover. A directory that can legitimately hold two distinct entries for one date is not a dated series, whatever its content looks like.
+
+*Typical names:* `journal/` (prose); `health/measurements/`, `grades/`, `readings/` (record).
 
 > **Note (non-normative).** A dated journal and a structured record could be modeled as two archetypes. They are one shape — a dated series — differing only in whether the content lives in the body or in the frontmatter, and splitting them would add an archetype without adding any rule an agent needs.
+>
+> [A-11] is what turns [A-5]'s one-file-per-date filename rule from an arbitrary constraint into a consequence of the archetype's meaning: `<date>.md` is a resolvable address only when the date is the primary key. The requirement itself is a judgment call, but its mechanical proxy already exists — the `filenames` check ([S-8]) fails on exactly the directories that violate it, because a second entry for one date cannot take the date as its filename.
+>
+> A directory named for a date (`2026-07-31/`) is a shape this standard does not have and would need a new archetype for zero gain: `<date>-<slug>.md` in a flat directory gives identical chronological grouping under lexical sort, with no new machinery.
 
 ### 5.6 Captured external
 
@@ -161,6 +167,29 @@ A file whose content is computed from other notes: a dashboard, a chart, a roll-
 *Typical names:* a home note, a dashboard note, a query/base file.
 
 > **Rationale (non-normative).** This archetype exists because denormalized dashboards appear naturally in real instances — a chart file duplicating a series of measurements, a summary table mirroring a context note — and they silently become a second, drifting source of truth. Naming the pattern and forcing a declared direction of derivation is what keeps [C-2] true. [A-9] states the stronger preference: a view backed by a live query cannot drift, because there is nothing to keep in sync. Agent-maintained views are permitted because not every value is queryable, but they carry a reconciliation date so that staleness is visible rather than assumed away.
+
+### 5.8 Choosing an archetype (non-normative)
+
+The archetype set is closed, but the choice is not always obvious — and a wrong choice is made once, at declaration time, and paid for ever afterwards as friction. The questions below are ordered most-discriminating first, so the procedure terminates early. Ask them about the thing the user keeps, not about the directory they imagine.
+
+1. Is it computed from other notes? → **derived view**
+2. Did it originate outside the brain, to be filed and summarized? → **captured external**
+3. Is it one immutable line per closed thing? → **append-only log**
+4. Does it describe how a domain works, with no lifecycle? → **background context**
+5. Is the date its identity ([A-11])? → **dated series** — pick the flavor by whether the content lives in the body or the frontmatter
+6. Is it expected to end and be disposed of? → **ephemeral work item**, else **durable entity**
+
+Question 5 is the one that fails in practice, so it is worth stating as a test: **can two of these legitimately exist on the same day and still be different things?** If yes, the date is an attribute, not the identity, and the directory is not a dated series. A journal entry: no. A weight measurement: no. A meeting: obviously yes.
+
+Meetings are the worked example, because the near-miss teaches more than the rule does. Three readings of "I want to track meetings", three different answers:
+
+| What the user actually keeps | Archetype | Shape |
+|---|---|---|
+| Notes per occurrence | captured external | `2026-07-31-1on1-ada.md`, `2026-07-31-arch-review.md` |
+| The recurring ritual or relationship | durable entity | `weekly-1on1-ada.md`, occurrences appended |
+| One structured assessment per day, per person | dated series (record), scoped per entity | `advisees/ada/meetings/2026-07-31.md` |
+
+Per-occurrence notes is the common case and already conforms: [S-8] gives dated captures `<date>-<slug>.md`, which sorts chronologically, and [A-7]'s status vocabulary maps cleanly onto a meeting's real lifecycle (raw notes → follow-ups extracted). [A-7]'s rule that a capture MUST NOT create a work item as a side effect is precisely the behavior you want from meeting notes.
 
 ## 6. Schema
 
@@ -567,8 +596,8 @@ Two instances with nothing in common, both conforming. The left column is the on
 | Background context | `context/` per domain | `context/` per domain |
 | Append-only log | `history.md` | `history.md` |
 | Dated series (prose) | `journal/` | `journal/` |
-| Dated series (record) | body measurements | advising meetings, assessments |
-| Captured external | `reading/` | `reading/`, much heavier |
+| Dated series (record) | body measurements | daily advisee assessments |
+| Captured external | `reading/` | `reading/`, meeting notes, much heavier |
 | Derived view | a home note, a dashboard | a teaching-load dashboard |
 
 Their manifests differ in every value and in no key.
