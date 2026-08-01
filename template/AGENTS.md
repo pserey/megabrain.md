@@ -28,6 +28,7 @@ file write it covers.
 | Adding a task or note, "add task: X", "remind me to", "track this" | `skills/core/add-item.md` |
 | Finishing, completing, cancelling, or being done with an item | `skills/core/complete-item.md` |
 | Summarizing or filing an article, paper, or link; a message that is mostly a URL | `skills/core/capture.md` |
+| Setting up this brain for the first time, "set up my brain", "I'm new here", "make this mine", "onboard me" | `skills/core/onboard.md` |
 | Starting to track something new, adding a domain or entity type, setting up an integration | `skills/core/extend-brain.md` |
 | Upgrading this brain, moving to a newer spec version, installing a release | `skills/core/upgrade.md` |
 

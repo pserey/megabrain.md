@@ -11,8 +11,8 @@
 #   curl -fsSL .../install.sh | bash -s -- --dir ~/brain --version 0.2.0
 #
 # The installer asks nothing. Tailoring the brain -- timezone, domains, entity
-# types -- is the agent's job, through the extend-brain procedure the template
-# ships with. Run `bash install.sh --help` for the flags.
+# types -- is the agent's job, through the onboard procedure the template ships
+# with. Run `bash install.sh --help` for the flags.
 
 set -euo pipefail
 
@@ -43,7 +43,7 @@ Usage: install.sh [options]
   --help            show this message
 
 The installer never prompts. Once it finishes, point your agent at the new
-repository and ask it to make the brain yours.
+repository and ask it to onboard you.
 EOF
 }
 
@@ -185,9 +185,10 @@ cat <<EOF
 
 Done. Your megabrain is at $target_dir
 
-Next, point an agent at it and ask it to make the brain yours. The agent is
-the primary operator: it reads AGENTS.md, follows the procedures in skills/,
-and is the only supported way to upgrade when a new release lands.
+Next, point an agent at it and ask it to onboard you -- the template ships an
+onboard procedure for exactly this, reachable by saying "set up my brain". The
+agent is the primary operator: it reads AGENTS.md, follows the procedures in
+skills/, and is the only supported way to upgrade when a new release lands.
 
   cd $target_dir
 EOF
