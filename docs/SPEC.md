@@ -1,6 +1,6 @@
 # The megabrain specification
 
-**Version:** 0.2.0 · **Status:** Released 2026-07-29 · **Format:** Normative
+**Version:** 0.3.0 · **Status:** Released 2026-07-31 · **Format:** Normative
 
 A megabrain is a git repository of plain Markdown files that a person keeps as their second brain, and that AI agents read and write as a first-class client. This document specifies what makes a repository *a megabrain* rather than a folder of notes: the invariants, the schema, the agent runtime contract, and the points at which two instances may legitimately differ.
 
@@ -610,3 +610,4 @@ This specification does not define, and MUST NOT be extended to define: any pers
 
 - **0.1.0** — initial release. Extracted from a working instance spanning engineering, graduate study, and personal-health domains, and refined through two annotation rounds before release.
 - **0.2.0** — Added §15 Distribution and upgrades: the managed/instance ownership boundary, the lock file, migration packs, the agent-executed upgrade procedure, the conformance checker, and the release policy. Conformance renumbered to §16.
+- **0.3.0** — Added [A-11]: a dated series is one whose entries are uniquely identified by the date they cover, with §5.8 *Choosing an archetype* as the non-normative decision procedure. Removed the misleading `meetings/` dated-series examples — meetings are captured external in the common case. The template gains an `onboard` core procedure: bulk extension with an interview in front, built on §5.8.
