@@ -24,10 +24,38 @@ in full before changing anything.
 
 Follow this order exactly:
 
-1. Choose the archetype: `ephemeral_work_item`, `durable_entity`,
-   `background_context`, `append_only_log`, `dated_series` (declare flavor
-   `prose` or `record`), `captured_external`, or `derived_view`. The
-   archetype set is closed — if none fits, say so and stop.
+1. Choose the archetype. Work through these questions in order — they are
+   arranged most-discriminating first, so stop at the first one that
+   settles it. Ask them about the thing the user keeps, not about the
+   directory they imagine.
+
+   1. Is it computed from other notes? → `derived_view`
+   2. Did it originate outside the brain, to be filed and summarized? →
+      `captured_external`
+   3. Is it one immutable line per closed thing? → `append_only_log`
+   4. Does it describe how a domain works, with no lifecycle? →
+      `background_context`
+   5. Is the date its identity? → `dated_series` (declare flavor `prose`
+      or `record`, by whether the content lives in the body or the
+      frontmatter)
+   6. Is it expected to end and be disposed of? → `ephemeral_work_item`;
+      otherwise → `durable_entity`
+
+   Question 5 has a name: the **same-day test**. Can two of these
+   legitimately exist on the same day and still be different things? If
+   yes, the date is an attribute, not the identity, and it is not a dated
+   series — whatever its content looks like. Meetings are the classic
+   near-miss: notes per occurrence are dated captures
+   (`<date>-<slug>.md`), not a dated series.
+
+   Before declaring anything, state the chosen archetype back to the user
+   **and the question that settled it**. Naming the discriminator out
+   loud is what gives the user the chance to say "no, wait, I have two of
+   those a day."
+
+   The archetype set is closed. If the answer is genuinely that none of
+   these fit, stop and report that — do not approximate. An approximate
+   fit is the failure mode this procedure exists to prevent.
 2. Where the archetype requires one, choose the status vocabulary and
    identify its terminal statuses, plus the `on_terminal` disposition.
 3. Declare the directory in the manifest: path, archetype, vocabulary.
